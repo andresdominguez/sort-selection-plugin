@@ -38,27 +38,36 @@ public class SortSelectionAction extends AnAction {
 
     int selectionStart = editor.getSelectionModel().getSelectionStart();
     int selectionEnd = editor.getSelectionModel().getSelectionEnd();
-
     String selectedText = editor.getSelectionModel().getSelectedText();
 
-    String[] split = selectedText.split(",");
-    List<String> strings = Arrays.asList(split);
+    String sortedText = getSortedText(selectedText, ",");
+
+    runWriteActionInsideCommand(selectionStart, selectionEnd, sortedText);
+  }
+
+  private String getSortedText(String selectedText, String splitBy) {
+    List<String> strings = Arrays.asList(selectedText.split(splitBy));
     Collections.sort(strings, new Comparator<String>() {
       public int compare(String left, String right) {
+        // Trim before sort.
         return left.trim().compareTo(right.trim());
       }
     });
-    StringBuffer buffer = new StringBuffer();
+
+    return join(strings, splitBy);
+  }
+
+  private String join(List<String> strings, String joinWith) {
+    StringBuilder buffer = new StringBuilder();
     for (String s : strings) {
-      buffer.append(s).append(",");
+      buffer.append(s).append(joinWith);
     }
+
     if (buffer.length() > 0) {
       buffer.deleteCharAt(buffer.length() - 1);
     }
 
-    String s = buffer.toString();
-
-    runWriteActionInsideCommand(selectionStart, selectionEnd, s);
+    return buffer.toString();
   }
 
   private void runWriteActionInsideCommand(
